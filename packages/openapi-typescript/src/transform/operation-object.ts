@@ -21,6 +21,7 @@ export default function transformOperationObject(operationObject: OperationObjec
     if (operationObject.parameters) {
       const parameterOutput: string[] = [];
       indentLv++;
+      let allParamsOptional = true;
       for (const paramIn of ["query", "header", "path", "cookie"] as ParameterObject["in"][]) {
         const paramInternalOutput: string[] = [];
         indentLv++;
@@ -33,6 +34,7 @@ export default function transformOperationObject(operationObject: OperationObjec
             key = tsOptionalProperty(key);
           } else {
             allOptional = false;
+            allParamsOptional = false;
           }
           const c = getSchemaObjectComment(param, indentLv);
           if (c) paramInternalOutput.push(indent(c, indentLv));
@@ -56,7 +58,8 @@ export default function transformOperationObject(operationObject: OperationObjec
       indentLv--;
 
       if (parameterOutput.length) {
-        output.push(indent(`parameters: {`, indentLv));
+        const key = allParamsOptional ? tsOptionalProperty("parameters") : "parameters";
+        output.push(indent(`${key}: {`, indentLv));
         output.push(parameterOutput.join("\n"));
         output.push(indent("};", indentLv));
       }
